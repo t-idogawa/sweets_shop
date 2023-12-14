@@ -13,10 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('password_resets', function (Blueprint $table) {
-            $table->string('email')->index();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
+        Schema::table('shoppingcart', function (Blueprint $table) {
+            $table->boolean('buy_flag')->default(false);
         });
     }
 
@@ -27,6 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('password_resets');
+        Schema::table('shoppingcart', function (Blueprint $table) {
+            $table->dropColumn('buy_flag');
+        });
     }
 };
