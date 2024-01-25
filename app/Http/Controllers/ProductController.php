@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\MajorCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -20,15 +21,17 @@ class ProductController extends Controller
             $products = Product::where('category_id', $request->category)->sortable()->paginate(10);
             $total_count = Product::where('category_id', $request->category)->count();
             $category = Category::find($request->category);
+            $major_category = MajorCategory::find($category->major_category_id);
         } else {
             $products = Product::sortable()->paginate(10);
             $total_count = "";
             $category = null;
+            $major_category = null;
         }
         $categories = Category::all();
-        $major_category_names = Category::pluck('major_category_name')->unique();
+        $major_categories = MajorCategory::all();
 
-        return view('products.index', compact('products','category', 'categories', 'major_category_names', 'total_count'));
+        return view('products.index', compact('products','category', 'major_category', 'categories', 'major_categories', 'total_count'));
     }
 
     /**
@@ -51,15 +54,20 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $product = new Product();
-        $product->name = $request->input('name');
-        $product->description = $request->input('description');
-        $product->price = $request->input('price');
-        $product->stock = $request->input('stock');
-        $product->category_id = $request->input('category_id');
-        $product->save();
+        DB::beginTransaction();
 
-        return to_route('products.index');
+        try{
+            $product = new Product();
+            $product->createNewProduct($request);
+            
+            DB::commit();
+
+            return to_route('products.index');
+
+        } catch(\Exception $e) {
+            DB::rollback();
+            return back();
+        }
     }
 
     /**
@@ -97,14 +105,28 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        $product->name = $request->input('name');
-        $product->description = $request->input('description');
-        $product->price = $request->input('price');
-        $product->stock = $request->input('stock');
-        $product->category_id = $request->input('category_id');
-        $product->update();
+        DB::beginTransaction();
 
-        return to_route('products.index');
+        try{
+            $data = [
+                'id' => $product->id,
+                'name' => $request->input('name'),
+                'description' => $request->input('description'),
+                'price' => $request->input('price'),
+                'stock' => $request->input('stock'),
+                'category_id' => $request->input('category_id')
+            ];
+
+            $product->updateProduct($data);
+
+            DB::commit();
+
+            return to_route('products.index');
+
+        } catch(\Exception $e) {
+            DB::rollback();
+            return back();
+        }
     }
 
     /**
@@ -115,9 +137,19 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        $product->delete();
+        DB::beginTransaction();
 
-        return to_route('products.index');
+        try{
+            $product->delete();
+
+            return to_route('products.index');
+
+        } catch(\Exception $e){
+            DB::rollback();
+            return back();
+        }
+
+        
     }
 
     public function favorite(Product $product)

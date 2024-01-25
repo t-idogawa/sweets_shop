@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-md navbar-light shadow-sm header-container">
     <div class="container">
-        <a class="navbar-brand" href="{{ url('/index') }}">
+        <a class="navbar-brand" href="{{ url('/') }}">
             {{ config('app.name', 'Laravel') }}
         </a>
         <form class="row g-1">

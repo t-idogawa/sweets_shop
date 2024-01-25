@@ -12,4 +12,8 @@ class Category extends Model
     public function products() {
         return $this->hasMany(Product::class);
     }
+
+    public function major_category() {
+        return $this->belongsTo(MajorCategory::class);
+    }
 }
