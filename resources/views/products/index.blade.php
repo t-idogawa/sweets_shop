@@ -11,6 +11,9 @@
             @if($category !== null)
                <a href="{{ route('products.index') }}">トップ</a> > <a href="#">{{ $major_category->name }}</a> > {{ $category->name }}
                <h1>{{ $category->name }}の商品一覧{{ $total_count }}件</h1>
+            @elseif($keyword !== null)
+               <a href="{{ route('products.index') }}">トップ</a> > 商品一覧
+               <h1>"{{ $keyword }}"の検索結果{{ $total_count }}件</h1>
             @endif
         </div>
         <div>
